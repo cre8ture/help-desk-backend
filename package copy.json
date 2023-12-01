@@ -2,9 +2,10 @@
   "name": "help-desk-backend",
   "version": "1.0.0",
   "description": "",
+  "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "start": "node ./bin/www"
+    "start": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
