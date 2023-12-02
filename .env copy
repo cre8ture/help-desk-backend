@@ -1,0 +1,6 @@
+RDS_HOSTNAME=database-helpdesk.c3gjw3ruuurp.us-east-1.rds.amazonaws.com
+RDS_USERNAME=root
+RDS_PASSWORD=doodled00
+RDS_PORT=3306
+RDS_DB_NAME=database-helpdesk
+
