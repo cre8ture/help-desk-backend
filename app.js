@@ -29,6 +29,15 @@ const pool = mysql.createPool({
 //   }
 //   console.log('Connected to the database');
 // Test database connection
+function addDateRespondedColumn(callback) {
+  const alterTableQuery = `
+    ALTER TABLE tickets
+    ADD COLUMN IF NOT EXISTS dateResponded DATETIME;
+  `;
+  pool.query(alterTableQuery, callback);
+}
+
+
 pool.query('SELECT 1', (err, results) => {
   if (err) {
     console.error('Error connecting to the database:', err);
@@ -56,15 +65,18 @@ pool.query('SELECT 1', (err, results) => {
         name TEXT NOT NULL,
         email TEXT NOT NULL,
         description TEXT NOT NULL,
-        date DATE NOT NULL,
-        time TIME NOT NULL,
+        date DATETIME NOT NULL,
         status ENUM('new', 'in progress', 'resolved') NOT NULL DEFAULT 'new',
-        response_name TEXT,  -- Add response_name field
-        response_response TEXT  -- Add response_response field
+        response_name TEXT,
+        response_response TEXT
       );
-      `;
+    `;
+    
+    
+
         pool.query(createTableQuery, callback);
-    }
+    },
+    // addDateRespondedColumn,
   ], (err, results) => {
     if (err) {
       console.error('Exception initializing database:', err);
@@ -86,13 +98,13 @@ app.get('/', (req, res) => {
 //   // Add the ticket to the database
 //   const query = 'INSERT INTO tickets(name, email, description, date, time, status, response_name, response_response) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
 //   pool.query(query, [name, email, description, date, date, 'new', response_name, response_response], (err, result) => {
-
-app.post('/tickets', (req, res) => {
-  const { name, email, description, response_name, response_response } = req.body;
-  const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-  const query = 'INSERT INTO tickets(name, email, description, date, time, status, response_name, response_response) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
-  pool.query(query, [name, email, description, dateTime, dateTime, 'new', response_name, response_response], (err, result) => {
+  app.post('/tickets', (req, res) => {
+    const { name, email, description, response_name, response_response } = req.body;
+    const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  
+    const query = 'INSERT INTO tickets(name, email, description, date, status, response_name, response_response) VALUES(?, ?, ?, ?, ?, ?, ?)';
+    pool.query(query, [name, email, description, dateTime, 'new', response_name, response_response], (err, result) => {
+  // pool.query(query, [name, email, description, dateTime, dateTime, 'new', response_name, response_response], (err, result) => {
 
     if (err) {
       console.error(err.message);
@@ -109,22 +121,46 @@ app.post('/tickets', (req, res) => {
 
 //   // Update the ticket in the database, including response_name and response_response
 //   const query = 'UPDATE tickets SET name = ?, email = ?, description = ?, status = ?, response_name = ?, response_response = ? WHERE id = ?';
-app.put('/tickets/:id', (req, res) => {
-  const { id } = req.params;
-  const fieldsToUpdate = req.body;
-  const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  
+  // app.put('/tickets/:id', (req, res) => {
+  //   const { id } = req.params;
+  //   const fieldsToUpdate = req.body;
+  
+  //   // Create a query dynamically based on the fields provided
+  //   const setClause = Object.keys(fieldsToUpdate)
+  //     .map(key => `${key} = ?`)
+  //     .join(', ');
+  
+  //   const queryValues = [...Object.values(fieldsToUpdate), id];
+  
+  //   const query = `UPDATE tickets SET ${setClause} WHERE id = ?`;
+  // pool.query(query, [name, email, description, status, response_name, response_response, id], (err, result) => {
+    app.put('/tickets/:id', (req, res) => {
+      const { id } = req.params;
+      const fieldsToUpdate = req.body;
+      // const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      console.log("req.body", req.body)
+      
+    
+      const setClause = Object.keys(fieldsToUpdate)
+        .map(key => `${key} = ?`)
+        .join(', ');
+    
+      // const queryValues = [...Object.values(fieldsToUpdate), dateTime, id];
+      const queryValues = [...Object.values(fieldsToUpdate), id];
 
-  const setClause = Object.keys(fieldsToUpdate)
-    .map(key => `${key} = ?`)
-    .join(', ');
+    
+      // const query = `UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
+      const query = `UPDATE tickets SET ${setClause} WHERE id = ?`;
 
-  const queryValues = [...Object.values(fieldsToUpdate), dateTime, id];
+      console.log("Executing query:", query);
+      console.log("With values:", queryValues);
 
-  const query = `UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
-  pool.query(query, queryValues, (err, result) => {
+
+      pool.query(query, queryValues, (err, result) => {
     if (err) {
-      console.error(err.message);
-      return res.status(500).send({ message: 'Error updating ticket' });
+      console.error(err.message, "RES", result);
+      return res.status(500).send({ message: 'Error updating ticket' + err.message });
     }
     if (result.affectedRows === 0) {
       return res.status(404).send({ message: 'Ticket not found' });

@@ -1,0 +1,28 @@
+# some curl requests to test api
+
+- POST for powershell windows:
+
+$url = 'http://localhost:3000/tickets'
+$body = @{
+    name = "John Doe"
+    email = "john.doe@example.com"
+    description = "Issue description"
+    response_name = ""
+    response_response = ""
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json"
+
+- PULL for powershell windows
+
+$url = 'http://localhost:3000/tickets/1'  # Replace with the correct ID
+$body = @{
+    response_name = "Updated Responder Name"
+    response_response = "Updated Response Text"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri $url -Method PUT -Body $body -ContentType "application/json"
+
+
+GET requests
+curl http://localhost:3000/tickets
