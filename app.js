@@ -68,8 +68,10 @@ pool.query('SELECT 1', (err, results) => {
         date DATETIME NOT NULL,
         status ENUM('new', 'in progress', 'resolved') NOT NULL DEFAULT 'new',
         response_name TEXT,
-        response_response TEXT
-      );
+        response_response TEXT,
+        dateResponded DATETIME
+    );
+    
     `;
     
     
@@ -138,7 +140,7 @@ app.get('/', (req, res) => {
     app.put('/tickets/:id', (req, res) => {
       const { id } = req.params;
       const fieldsToUpdate = req.body;
-      // const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
       console.log("req.body", req.body)
       
     
@@ -146,12 +148,12 @@ app.get('/', (req, res) => {
         .map(key => `${key} = ?`)
         .join(', ');
     
-      // const queryValues = [...Object.values(fieldsToUpdate), dateTime, id];
-      const queryValues = [...Object.values(fieldsToUpdate), id];
+      const queryValues = [...Object.values(fieldsToUpdate), dateTime, id];
+      // const queryValues = [...Object.values(fieldsToUpdate), id];
 
     
-      // const query = `UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
-      const query = `UPDATE tickets SET ${setClause} WHERE id = ?`;
+      const query = `UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
+      // const query = `UPDATE tickets SET ${setClause} WHERE id = ?`;
 
       console.log("Executing query:", query);
       console.log("With values:", queryValues);
