@@ -20,7 +20,6 @@ const pool = mysql.createPool({
   port: process.env.RDS_PORT,
   // database: process.env.RDS_DB_NAME // Add the database name here
 });
-      const dbname = process.env.RDS_DB_NAME;
 
 pool.query('SELECT 1', (err, results) => {
   if (err) {
@@ -29,7 +28,7 @@ pool.query('SELECT 1', (err, results) => {
   }
   console.log('Connected to the database');
 
-  const dbname = process.env.RDS_DB_NAME;
+  const dbname = "databasehelpdesk";//process.env.RDS_DB_NAME;
 
   // Proceed with the async series of queries
   async.series([
@@ -94,32 +93,57 @@ app.get('/', (req, res) => {
   });
 });
 
-    app.put('/tickets/:id', (req, res) => {
-      const { id } = req.params;
-      const fieldsToUpdate = req.body;
-      const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+//     app.put('/tickets/:id', (req, res) => {
+//       const { id } = req.params;
+//       const fieldsToUpdate = req.body;
+//       const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
       
     
-      const setClause = Object.keys(fieldsToUpdate)
-        .map(key => `${key} = ?`)
-        .join(', ');
+//       const setClause = Object.keys(fieldsToUpdate)
+//         .map(key => `${key} = ?`)
+//         .join(', ');
     
-      // const queryValues = [...Object.values(fieldsToUpdate), dateTime, id];
-      const queryValues = [...Object.values(fieldsToUpdate), dateTime, dateTime, id];
+//       // const queryValues = [...Object.values(fieldsToUpdate), dateTime, id];
+//       const queryValues = [...Object.values(fieldsToUpdate), dateTime, dateTime, id];
 
 
     
-      // const query = `UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
-      const query = `USE \`${dbname}\`; UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
+//       // const query = `UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
+//       const query = `USE \`${dbname}\`; UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
     
-      console.log("Executing query:", query);
-      console.log("With values:", queryValues);
+//       console.log("Executing query:", query);
+//       console.log("With values:", queryValues);
 
 
-      pool.query(query, queryValues, (err, result) => {
+//       pool.query(query, queryValues, (err, result) => {
+//     if (err) {
+//       console.error(err.message, "RES", result);
+//       return res.status(500).send({ message: 'Error updating ticket' + err.message });
+//     }
+//     if (result.affectedRows === 0) {
+//       return res.status(404).send({ message: 'Ticket not found' });
+//     }
+//     console.log(`Ticket with ID: ${id} has been updated`);
+//     res.status(200).send({ message: 'Ticket updated successfully' });
+//   });
+// });
+
+app.put('/tickets/:id', (req, res) => {
+  const { id } = req.params;
+  const { response_response, response_name } = req.body;
+  const dateResponded = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+  const query = 'UPDATE tickets SET response_response = ?, response_name = ?, dateResponded = ? WHERE id = ?';
+  const queryValues = [response_response, response_name, dateResponded, id];
+
+  console.log("Executing query:", query);
+  console.log("With values:", queryValues);
+  console.log("HERE IS THE MOST UPDATE VERSION 923")
+
+  pool.query(query, queryValues, (err, result) => {
     if (err) {
-      console.error(err.message, "RES", result);
-      return res.status(500).send({ message: 'Error updating ticket' + err.message });
+      console.error(err.message);
+      return res.status(500).send({ message: 'Error updating ticket: ' + err.message });
     }
     if (result.affectedRows === 0) {
       return res.status(404).send({ message: 'Ticket not found' });

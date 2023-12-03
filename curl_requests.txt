@@ -13,7 +13,7 @@ $body = @{
 
 Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json"
 
-- PULL for powershell windows
+- PUT for powershell windows
 
 $url = 'http://localhost:3000/tickets/1'  # Replace with the correct ID
 $body = @{
