@@ -24,5 +24,7 @@ $body = @{
 Invoke-WebRequest -Uri $url -Method PUT -Body $body -ContentType "application/json"
 
 
+
+
 GET requests
 curl http://localhost:3000/tickets

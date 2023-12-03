@@ -20,23 +20,7 @@ const pool = mysql.createPool({
   port: process.env.RDS_PORT,
   // database: process.env.RDS_DB_NAME // Add the database name here
 });
-
-// // Connect to the database
-// pool.connect((err) => {
-//   if (err) {
-//     console.error('Error connecting to the database:', err);
-//     return;
-//   }
-//   console.log('Connected to the database');
-// Test database connection
-function addDateRespondedColumn(callback) {
-  const alterTableQuery = `
-    ALTER TABLE tickets
-    ADD COLUMN IF NOT EXISTS dateResponded DATETIME;
-  `;
-  pool.query(alterTableQuery, callback);
-}
-
+      const dbname = process.env.RDS_DB_NAME;
 
 pool.query('SELECT 1', (err, results) => {
   if (err) {
@@ -93,13 +77,6 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-// app.post('/tickets', (req, res) => {
-//   const { name, email, description, response_name, response_response } = req.body;
-//   const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-//   // Add the ticket to the database
-//   const query = 'INSERT INTO tickets(name, email, description, date, time, status, response_name, response_response) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
-//   pool.query(query, [name, email, description, date, date, 'new', response_name, response_response], (err, result) => {
   app.post('/tickets', (req, res) => {
     const { name, email, description, response_name, response_response } = req.body;
     const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -117,44 +94,24 @@ app.get('/', (req, res) => {
   });
 });
 
-// app.put('/tickets/:id', (req, res) => {
-//   const { id } = req.params;
-//   const { name, email, description, status, response_name, response_response } = req.body;
-
-//   // Update the ticket in the database, including response_name and response_response
-//   const query = 'UPDATE tickets SET name = ?, email = ?, description = ?, status = ?, response_name = ?, response_response = ? WHERE id = ?';
-  
-  // app.put('/tickets/:id', (req, res) => {
-  //   const { id } = req.params;
-  //   const fieldsToUpdate = req.body;
-  
-  //   // Create a query dynamically based on the fields provided
-  //   const setClause = Object.keys(fieldsToUpdate)
-  //     .map(key => `${key} = ?`)
-  //     .join(', ');
-  
-  //   const queryValues = [...Object.values(fieldsToUpdate), id];
-  
-  //   const query = `UPDATE tickets SET ${setClause} WHERE id = ?`;
-  // pool.query(query, [name, email, description, status, response_name, response_response, id], (err, result) => {
     app.put('/tickets/:id', (req, res) => {
       const { id } = req.params;
       const fieldsToUpdate = req.body;
       const dateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-      console.log("req.body", req.body)
       
     
       const setClause = Object.keys(fieldsToUpdate)
         .map(key => `${key} = ?`)
         .join(', ');
     
-      const queryValues = [...Object.values(fieldsToUpdate), dateTime, id];
-      // const queryValues = [...Object.values(fieldsToUpdate), id];
+      // const queryValues = [...Object.values(fieldsToUpdate), dateTime, id];
+      const queryValues = [...Object.values(fieldsToUpdate), dateTime, dateTime, id];
+
 
     
-      const query = `UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
-      // const query = `UPDATE tickets SET ${setClause} WHERE id = ?`;
-
+      // const query = `UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
+      const query = `USE \`${dbname}\`; UPDATE tickets SET ${setClause}, dateResponded = ? WHERE id = ?`;
+    
       console.log("Executing query:", query);
       console.log("With values:", queryValues);
 
